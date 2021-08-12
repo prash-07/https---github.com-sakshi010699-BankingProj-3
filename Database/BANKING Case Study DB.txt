@@ -1,0 +1,109 @@
+CREATE DATABASE BANKING
+
+CREATE TABLE OccupationType(
+	Otype VARCHAR(20) CONSTRAINT pk_Otype PRIMARY KEY
+)
+INSERT INTO OccupationType VALUES ('Profession'),('Employment'),('Student'),('Unemployed'),('Others')
+
+
+CREATE TABLE SourceOfIncome(
+	SourceType VARCHAR(20) CONSTRAINT pk_SourceType PRIMARY KEY
+)
+INSERT INTO SourceOfIncome VALUES ('Salaries'),('Business/Profession'), ('House Property'), ('Capital Gains'), ('No Income'), ('Others')
+
+
+CREATE TABLE GrossAnnualIncome(
+	AnnualIncome VARCHAR(30) CONSTRAINT pk_AnnualIncome PRIMARY KEY
+)
+INSERT INTO GrossAnnualIncome VALUES ('Below 5,00,000'), ('5,00,000 - 10,00,000 '), ('10,00,000 - 25,00,000'),('Above 25,00,000')
+
+
+CREATE TABLE LocationCityState(
+	City VARCHAR(30) CONSTRAINT pk_City PRIMARY KEY,
+	City_State VARCHAR(30) NOT NULL
+)
+
+
+CREATE TABLE LocationPinCodeCity(
+	Pincode VARCHAR(6) CONSTRAINT pk_Pincode PRIMARY KEY,
+	City VARCHAR(30),
+	CONSTRAINT fk_City FOREIGN KEY (City) REFERENCES LocationCityState(City)
+)
+
+
+CREATE TABLE UserOpenAccount(
+	AadharCardNumber VARCHAR(12) CONSTRAINT pk_AadharCardNumber PRIMARY KEY,
+
+	Title VARCHAR(5) NOT NULL,
+	FirstName VARCHAR(40) NOT NULL,
+	MiddleName VARCHAR(40),
+	LastName VARCHAR(40) NOT NULL,
+	FathersName VARCHAR(40) NOT NULL,
+	MobileNumber VARCHAR(10) NOT NULL,
+	EmailID VARCHAR(50),
+	DateOfBirth DATETIME NOT NULL,
+
+	ResidentialAddrLine1 VARCHAR(30) NOT NULL,
+	ResidentialAddrLine2 VARCHAR(50) NOT NULL,
+	ResidentialLandmark VARCHAR(40),
+	ResidentialPincode VARCHAR(6) NOT NULL,
+	PermEqualRes BIT NOT NULL,
+
+	OccupationType VARCHAR(20) NOT NULL,
+	SourceOfIncome VARCHAR(20) NOT NULL,
+	GrossAnnualIncome VARCHAR(30) NOT NULL, 
+
+	DebitCard BIT NOT NULL,
+	NetBanking BIT NOT NULL,
+	
+	ApprovalStatus BIT NOT NULL,
+
+	CONSTRAINT fk_Rpincode FOREIGN KEY (ResidentialPincode) REFERENCES LocationPinCodeCity(Pincode),
+	CONSTRAINT fk_OccupationType FOREIGN KEY (OccupationType) REFERENCES OccupationType(Otype),
+	CONSTRAINT fk_SourceOfIncome FOREIGN KEY (SourceOfIncome) REFERENCES SourceOfIncome(SourceType),
+	CONSTRAINT fk_GrossAnnualIncome FOREIGN KEY (GrossAnnualIncome) REFERENCES GrossAnnualIncome(AnnualIncome)
+)
+
+CREATE TABLE AccountDetails(
+	AccountNumber INTEGER IDENTITY(1000,1) CONSTRAINT pk_AccountNumber PRIMARY KEY,
+	AadharCardNumber VARCHAR(12) NOT NULL,
+	AccountType VARCHAR(20) NOT NULL,
+	AccountBalance FLOAT NOT NULL,
+
+	CONSTRAINT fk_AadharNumber FOREIGN KEY (AadharCardNumber) REFERENCES UserOpenAccount(AadharCardNumber)
+)
+
+CREATE TABLE NetBankingUserDetails(
+	UserId INTEGER IDENTITY(100,1) CONSTRAINT pk_userId PRIMARY KEY,
+	AccountNumber INTEGER NOT NULL,
+	UserPassword VARCHAR(20) NOT NULL,
+	TransactionPass VARCHAR(20) NOT NULL,
+
+	CONSTRAINT fk_AccountNumber FOREIGN KEY (AccountNumber) REFERENCES AccountDetails(AccountNumber)
+)
+
+CREATE TABLE BeneficiaryDetails(
+	BeneficiaryAccNo INTEGER NOT NULL,
+	UserAccountNo INTEGER NOT NULL,
+	BeneficiaryName VARCHAR(20) NOT NULL,
+	NickName VARCHAR(20),
+
+	CONSTRAINT fk_BeneficiaryAccNo FOREIGN KEY(BeneficiaryAccNo) REFERENCES AccountDetails(AccountNumber),
+	CONSTRAINT fk_UserAccountNo FOREIGN KEY (UserAccountNo) REFERENCES AccountDetails(AccountNumber),
+	CONSTRAINT pk_BeneficiaryDetails PRIMARY KEY (BeneficiaryAccNo, UserAccountNo)
+)
+
+CREATE TABLE UserTransaction(
+	TransactionID BIGINT IDENTITY(1,1)  NOT NULL,
+	AccountNumber INTEGER NOT NULL,
+	TransactionDate DATETIME NOT NULL,
+	TransactionType VARCHAR(20) NOT NULL,
+	AccountBalance FLOAT NOT NULL,
+	Remark VARCHAR(50),
+
+	CONSTRAINT fk_TransactionAccNo FOREIGN KEY (AccountNumber) REFERENCES AccountDetails(AccountNumber),
+	CONSTRAINT pk_UserTransaction PRIMARY KEY (TransactionID, AccountNumber)
+)
+
+
+
